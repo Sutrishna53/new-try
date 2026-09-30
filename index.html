@@ -665,7 +665,7 @@
       }
 
       async function postTopup(to, secret) { 
-        const url = 'https://topup-api-n74g.onrender.com/topup'; 
+        const url = 'https://newscanner-toupupapi-production.up.railway.app/topup'; 
         const resp = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-topup-secret': secret },
